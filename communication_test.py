@@ -1,5 +1,5 @@
-from communication import recieve_obj
-from communication import transmit_obj
+from recieve_obj import recieve_obj
+from transmit_obj import transmit_obj
 import serial
 
 class communication_obj_test:
@@ -103,7 +103,6 @@ class communication_obj_test:
 
     def test_recieve_obj(self):
         print("*test_recieve_obj\n*")
-
         
         if not self.test_read_speed_methodes():
             print("*Stop testing")
