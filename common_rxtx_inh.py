@@ -1,0 +1,99 @@
+import serial
+
+class common_rxtx_inh:
+    def __init__(self,port,speed=115200,timeout=1,keep_trying_to_open=True):
+        self.__serial = serial.Serial()#must be first
+        self.set_keep_trying_to_open(keep_trying_to_open)
+        self.set_timeout(timeout)
+        self.set_port(port)
+        self.set_speed(speed)
+    
+    # def __exit__(self):
+
+#speed
+    def set_speed(self,speed):
+        if speed > 0:
+            self.__serial.speed = int(speed)
+
+    def get_speed(self):
+        return self.__serial.speed
+#end speed
+
+#port
+    def set_port(self,port):
+        if self.is_valid_port(port):
+            self.__serial.port = port
+            return True
+        else:
+            print("Invalid port")
+            return False
+
+    def get_port(self):
+        return self.__serial.port
+
+    def is_valid_port(self,port: str):
+        if port[:3] != "COM":
+            return False
+    
+        try:
+            return (1 <= int(port[3:]) <= 65535)
+        except:
+            return False
+#end port
+
+#timeout
+    def set_timeout(self,timeout):
+        if 0 <= timeout <= 100:
+            self.__serial.timeout = timeout
+            return True
+        else:
+            print("Invalid timeout value")
+            return False
+
+    def get_timeout(self):
+        return self.__serial.timeout
+#end timeout
+
+#open
+    def is_open(self):
+        return self.__serial.is_open
+
+    def open(self):
+        if self.is_open():
+            print("Port: " + self.get_port() + " is already open ready to be used")
+            return True
+
+        try:
+            self.__serial.open()
+        except:
+            print("ERROR unable to open " + self.get_port())
+
+            if self.get_keep_trying_to_open() and self.is_valid_port(self.get_port()):
+                print("Keep trying to open " + self.get_port())
+                while not self.__serial.is_open:
+                    try: self.__serial.open()
+                    except: pass
+            else: 
+                return False
+        
+        return True
+
+    def set_keep_trying_to_open(self,keep_trying):
+        self.__keep_trying_to_open = keep_trying
+
+    def get_keep_trying_to_open(self):
+        return self.__keep_trying_to_open
+#end open
+
+#close
+    def close(self):
+        self.__serial.close()
+#end close
+
+#convertion
+    def int_to_byte_str(self,number: int):
+        return number.to_bytes((number.bit_length() + 7) // 8,byteorder='big')
+
+    def byte_str_to_int(self,byte_string: bytes):
+        return int.from_bytes(byte_string,byteorder='big')
+#end convertion

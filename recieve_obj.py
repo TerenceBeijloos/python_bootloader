@@ -1,48 +1,42 @@
 import serial
 import time 
+from common_rxtx_inh import common_rxtx_inh
 
-class recieve_obj:
-    def __init__(self,port,speed,timeout=1):
-        self.__serial = serial.Serial()
-        self.__serial.port = port
-        self.__serial.baudrate = speed
-        self.__serial.timeout = timeout
-
-    def __exit__(self, exc_type, exc_value,traceback):
-        if self.__serial.is_open:
-            self.__serial.close()
+class recieve_obj(common_rxtx_inh):
+    def __init__(self,port,speed,timeout=1,keep_trying_to_connect=True):
+        common_rxtx_inh.__init__(self,port,speed=speed,timeout=timeout,keep_trying_to_open=True)
 
     #read_size in bytes and max_time in seconds (float allowed)
     def recieve(self,max_time,read_size,open_port=True,close_port=True):
 
         if open_port:
-            self.__serial.open()
+            self.open()
 
-        if not self.__serial.is_open:
-            print("Unable to read, cannot open serial port: " + self.__serial.port )
-            return
+        if not self.is_open():
+            print("Serial port: " + self.__serial.port +  " is not open EXIT")
+            exit()
 
         self.__serial.timeout = max_time
         message = self.__serial.read(size=read_size)
 
         if close_port:
-            self.__serial.close()
+            self.close()
 
         return message
 
     #max_time in seconds, this is the maximum time this method will seek for pathern
     def seek_patern(self,patern,max_time=10,keep_seeking=False,patern_size=1):
         
+        max_time = int(max_time)
         if max_time <= 0 and not keep_seeking:
             print("max_time must be greater than 0, EXIT")
             exit()
         
-        # patern = patern&(bin(pow(2,8*patern_size)-1)
         recieve_time = 0.2 
         start_time = time.time()
         found = False
 
-        self.__serial.open()
+        self.open()
 
         if not keep_seeking:
             
@@ -51,28 +45,13 @@ class recieve_obj:
                 if self.recieve(recieve_time,patern_size,False,False) == patern:
                     found = True
                     break
-
         else:
             patern_recieved = self.recieve(recieve_time,patern_size,False,False)
 
-            while patern_recieved != patern:
-                patern_recieved = self.recieve(recieve_time,patern_size,False,False)
-                print(patern_recieved)
+            while patern_recieved != patern: patern_recieved = self.recieve(recieve_time,patern_size,False,False) #print(patern_recieved)
 
             found = True
 
-        self.__serial.close()
+        self.close()
+
         return found  
-
-
-    def set_read_speed(self,speed):
-        self.__serial.speed = speed
-
-    def get_read_speed(self):
-        return self.__serial.speed
-
-    def set_read_port(self,port):
-        self.__serial.port = port
-    
-    def get_read_port(self):
-        return self.__serial.port

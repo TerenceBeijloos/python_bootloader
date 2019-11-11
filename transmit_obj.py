@@ -1,30 +1,20 @@
 import serial
+from common_rxtx_inh import common_rxtx_inh
 
-class transmit_obj:
-    def __init__(self,port,speed):
-        self.__serial = serial.Serial()
-        self.__serial.port = port
-        self.__serial.baudrate = speed
+class transmit_obj(common_rxtx_inh):
+    def __init__(self,port,speed,timeout=1,keep_trying_to_connect=True):
+        common_rxtx_inh.__init__(self,port,speed=speed,timeout=timeout,keep_trying_to_open=True)
 
-    def transmit(self,data):
-        self.__serial.open()
+    def transmit(self,data,open_port=True,close_port=True):
+        
+        if open_port:
+            self.open()
 
-        if not self.__serial.is_open:
-            print("Unable to transmit, cannot open serial port: " + self.__serial.port )
+        if not self.is_open():
+            print("Unable to transmit, cannot open serial port: " + self.get_port() )
             return
 
         self.__serial.write(data)
 
-        self.__serial.close()
-
-    def set_write_speed(self,speed):
-        self.__serial.baudrate = speed
-
-    def get_write_speed(self):
-        return self.__serial.baudrate
-
-    def set_write_port(self,port):
-        self.__serial.port = port
-    
-    def get_write_port(self):
-        return self.__serial.port
+        if close_port:
+            self.close()
