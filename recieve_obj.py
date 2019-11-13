@@ -7,7 +7,7 @@ class recieve_obj(common_rxtx_inh):
         common_rxtx_inh.__init__(self,port,speed=speed,timeout=timeout,keep_trying_to_open=True)
 
     #read_size in bytes and max_time in seconds (float allowed)
-    def recieve(self,max_time,read_size,open_port=True,close_port=True):
+    def recieve(self,max_time,read_size,open_port=False,close_port=False):
 
         if open_port:
             self.open()
@@ -25,39 +25,10 @@ class recieve_obj(common_rxtx_inh):
 
         return message
 
-
-    #Item may only be int bytes or a list of ints or bytes
-    def item_to_list(self,item):
-        
-        if type(item) is bytes:
-            return [item]
-        elif type(item) is int:
-            return [self.int_to_byte_str(item)]
-
-        elif type(item) is list:
-            index = 0
-            return_list = [None] * len(item)
-
-            for i in item:
-
-                if type(i) is int:
-                    i = self.int_to_byte_str(i)
-                elif type(i) is not bytes:
-                    print("seek_patern: type_error, patern[" + index + "] is of type: " + type(i) + " EXIT")
-
-                return_list[index] = i
-                index += 1
-
-            return return_list
-
-        else:
-            print("item_to_list: type_error, patern is of type: " + type(item) + " EXIT")
-            exit()
-
     #max_time in seconds, this is the maximum time this method will seek for pathern. 
     #Recieve time is the time per message that the recieve function will wait, used for print_recieved. 
     #NOTE if recieve_time is set this function may take longer than max_time
-    def seek_patern(self,patern_passed,max_time=10,keep_seeking=False,patern_size=1,print_recieved=False,recieve_time=0):
+    def seek_patern(self,patern_passed,max_time=10,keep_seeking=False,patern_size=1,print_recieved=False,recieve_time=0,close_port=False,open_port=False):
         
         start_time = time.time()
         found = False
@@ -69,7 +40,8 @@ class recieve_obj(common_rxtx_inh):
             print("max_time must be greater than 0, EXIT")
             exit()
 
-        self.open()
+        if open_port:
+            self.open()
 
         if not keep_seeking:
             
@@ -85,11 +57,12 @@ class recieve_obj(common_rxtx_inh):
 
             while patern_recieved not in patern: 
                 patern_recieved = self.recieve(recieve_time,patern_size,False,False) 
-                if print_recieved: print(patern_recieved)
+                if print_recieved and patern_recieved != b'': print(patern_recieved)
 
             found = True
 
-        self.close()
+        if close_port:
+            self.close()
 
         if type(patern_passed) is not list:
             return found  

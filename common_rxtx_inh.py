@@ -115,9 +115,39 @@ class common_rxtx_inh:
 #end serial
 #convertion
     def int_to_byte_str(self,number: int):
-        return number.to_bytes((number.bit_length() + 7) // 8,byteorder='big')
+        if number == 0:
+            return b'\x00'
+        else:
+            return number.to_bytes((number.bit_length() + 7) // 8,byteorder='big')
 
     def byte_str_to_int(self,byte_string: bytes):
         return int.from_bytes(byte_string,byteorder='big')
 #end convertion
 
+    #Item may only be int bytes or a list of ints or bytes
+    def item_to_list(self,item):
+        
+        if type(item) is bytes:
+            return [item]
+        elif type(item) is int:
+            return [self.int_to_byte_str(item)]
+
+        elif type(item) is list:
+            index = 0
+            return_list = [None] * len(item)
+
+            for i in item:
+
+                if type(i) is int:
+                    i = self.int_to_byte_str(i)
+                elif type(i) is not bytes:
+                    print("seek_patern: type_error, patern[" + index + "] is of type: " + type(i) + " EXIT")
+
+                return_list[index] = i
+                index += 1
+
+            return return_list
+
+        else:
+            print("item_to_list: type_error, patern is of type: " + type(item) + " EXIT")
+            exit()

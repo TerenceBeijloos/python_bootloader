@@ -202,4 +202,6 @@ class rxtx_inh_test(common_rxtx_inh):
 
     #     self.set_port(port_2_open)
 
-        
+if __name__ == "__main__":
+    test = rxtx_inh_test()
+    test.all()
