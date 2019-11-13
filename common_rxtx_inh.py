@@ -1,7 +1,7 @@
 import serial
 
 class common_rxtx_inh:
-    def __init__(self,port,speed=115200,timeout=1,keep_trying_to_open=True):
+    def __init__(self,port,speed=115200,timeout=None,keep_trying_to_open=True):
         self.__serial = serial.Serial()#must be first
         self.set_keep_trying_to_open(keep_trying_to_open)
         self.set_timeout(timeout)
@@ -12,11 +12,17 @@ class common_rxtx_inh:
 
 #speed
     def set_speed(self,speed):
-        if speed > 0:
-            self.__serial.speed = int(speed)
+        try:
+            if speed > 0:
+                self.__serial.baudrate = int(speed)
+                return True
+            else:
+                return False
+        except:
+            return False
 
     def get_speed(self):
-        return self.__serial.speed
+        return self.__serial.baudrate
 #end speed
 
 #port
@@ -43,6 +49,9 @@ class common_rxtx_inh:
 
 #timeout
     def set_timeout(self,timeout):
+        if timeout == None:
+            self.__serial.timeout = None
+            return True
         if 0 <= timeout <= 100:
             self.__serial.timeout = timeout
             return True
@@ -71,15 +80,22 @@ class common_rxtx_inh:
             if self.get_keep_trying_to_open() and self.is_valid_port(self.get_port()):
                 print("Keep trying to open " + self.get_port())
                 while not self.__serial.is_open:
-                    try: self.__serial.open()
-                    except: pass
+                    try: 
+                        self.__serial.open()
+                    except:
+                         pass
             else: 
                 return False
         
         return True
 
     def set_keep_trying_to_open(self,keep_trying):
+        if type(keep_trying) is not bool:
+            print("set_keep_trying_to_open: keep_trying must be a bool, value not set")
+            return False
+            
         self.__keep_trying_to_open = keep_trying
+        return True
 
     def get_keep_trying_to_open(self):
         return self.__keep_trying_to_open
@@ -90,6 +106,13 @@ class common_rxtx_inh:
         self.__serial.close()
 #end close
 
+#serial
+    def get_serial(self):
+        return self.__serial
+
+    def set_serial(self,new_serial):
+        self.__serial = new_serial
+#end serial
 #convertion
     def int_to_byte_str(self,number: int):
         return number.to_bytes((number.bit_length() + 7) // 8,byteorder='big')
@@ -97,3 +120,4 @@ class common_rxtx_inh:
     def byte_str_to_int(self,byte_string: bytes):
         return int.from_bytes(byte_string,byteorder='big')
 #end convertion
+
