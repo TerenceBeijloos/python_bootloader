@@ -134,16 +134,20 @@ class common_rxtx_inh:
 
         elif type(item) is list:
             index = 0
+            byte_item = b''
             return_list = [None] * len(item)
 
             for i in item:
 
                 if type(i) is int:
-                    i = self.int_to_byte_str(i)
+                    byte_item = self.int_to_byte_str(i)
                 elif type(i) is not bytes:
                     print("seek_patern: type_error, patern[" + index + "] is of type: " + type(i) + " EXIT")
+                    exit()
+                else:
+                    byte_item = i
 
-                return_list[index] = i
+                return_list[index] = byte_item
                 index += 1
 
             return return_list
