@@ -3,8 +3,8 @@ import os
 
 # start application
 if __name__ == "__main__":
-    path = 'your\\path\\blinky_531.bin'
-    pr = programmer_obj("COM4",115200,path)
+    path = 'ble_temperature_ntf_585.bin'
+    pr = programmer_obj("COM3",57600,path)
 
     pr.start_booting()
     # path = 'C:\\Users\\tbeijloo\\Downloads\\python_scripts\\python_bootloader\\blinky_531.bin'
